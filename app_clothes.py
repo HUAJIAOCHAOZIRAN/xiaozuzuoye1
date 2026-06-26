@@ -212,8 +212,9 @@ def get_img_main_color_name_with_deepseek(pil_img):
 请直接返回颜色名称，不要有任何其他解释或说明。例如：驼色"""
 
         # 调用DeepSeek API（纯文本方式）
+        model_name = st.session_state.get("deepseek_model", DEEPSEEK_MODEL)
         response = get_client().chat.completions.create(
-            model=DEEPSEEK_MODEL,
+            model=model_name,
             messages=[
                 {
                     "role": "user",
@@ -315,8 +316,8 @@ def smart_color_recognition(pil_img):
     1. 优先使用DeepSeek模型进行识别
     2. 如果DeepSeek API不可用或失败，使用备用的机械式识别
     """
-    # 检查DeepSeek API是否配置
-    if DEEPSEEK_API_KEY and DEEPSEEK_API_KEY != "your_deepseek_api_key_here":
+    client = get_client()
+    if client:
         try:
             return get_img_main_color_name_with_deepseek(pil_img)
         except Exception as e:
@@ -422,9 +423,6 @@ with st.expander("点击配置DeepSeek API（可选）", expanded=False):
         )
     
     if st.button("保存API配置"):
-        st.session_state.deepseek_api_key = deepseek_api_key
-        st.session_state.deepseek_base_url = deepseek_base_url
-        st.session_state.deepseek_model = deepseek_model
         # 清除旧的客户端，下次调用时会使用新配置重新创建
         if "api_client" in st.session_state:
             del st.session_state.api_client
